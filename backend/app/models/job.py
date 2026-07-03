@@ -22,38 +22,72 @@ class Job(Base, UUIDMixin, TimestampMixin, SoftDeleteMixin):
     __tablename__ = "jobs"
 
     queue_id: Mapped[uuid.UUID] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("queues.id", ondelete="CASCADE"), nullable=False, index=True
+        UUID(as_uuid=True),
+        ForeignKey("queues.id", ondelete="CASCADE"),
+        nullable=False,
+        index=True,
     )
+
     created_by: Mapped[uuid.UUID | None] = mapped_column(
-        UUID(as_uuid=True), ForeignKey("users.id", ondelete="SET NULL"), nullable=True, index=True
+        UUID(as_uuid=True),
+        ForeignKey("users.id", ondelete="SET NULL"),
+        nullable=True,
+        index=True,
     )
 
     name: Mapped[str] = mapped_column(String(255), nullable=False)
     description: Mapped[str | None] = mapped_column(Text, nullable=True)
     payload: Mapped[dict] = mapped_column(JSONB, nullable=False, default=dict)
+
     status: Mapped[JobStatus] = mapped_column(
-        SAEnum(JobStatus, name="job_status_enum", native_enum=True),
-        default=JobStatus.PENDING, nullable=False, index=True,
+        SAEnum(
+            JobStatus,
+            name="job_status_enum",
+            native_enum=True,
+            values_callable=lambda x: [e.value for e in x],
+        ),
+        default=JobStatus.PENDING,
+        nullable=False,
+        index=True,
     )
+
     priority: Mapped[int] = mapped_column(Integer, default=0, nullable=False)
     max_retries: Mapped[int] = mapped_column(Integer, default=3, nullable=False)
     timeout_seconds: Mapped[int] = mapped_column(Integer, default=300, nullable=False)
 
     queue: Mapped["Queue"] = relationship("Queue", back_populates="jobs")
-    created_by_user: Mapped["User | None"] = relationship("User", back_populates="jobs_created")
+    created_by_user: Mapped["User | None"] = relationship(
+        "User",
+        back_populates="jobs_created",
+    )
 
     scheduled_jobs: Mapped[list["ScheduledJob"]] = relationship(
-        "ScheduledJob", back_populates="job", cascade="all, delete-orphan", passive_deletes=True
+        "ScheduledJob",
+        back_populates="job",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
+
     retry_policy: Mapped["RetryPolicy | None"] = relationship(
-        "RetryPolicy", back_populates="job", uselist=False,
-        cascade="all, delete-orphan", passive_deletes=True,
+        "RetryPolicy",
+        back_populates="job",
+        uselist=False,
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
+
     executions: Mapped[list["JobExecution"]] = relationship(
-        "JobExecution", back_populates="job", cascade="all, delete-orphan", passive_deletes=True
+        "JobExecution",
+        back_populates="job",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
+
     dead_letter_entries: Mapped[list["DeadLetterQueue"]] = relationship(
-        "DeadLetterQueue", back_populates="job", cascade="all, delete-orphan", passive_deletes=True
+        "DeadLetterQueue",
+        back_populates="job",
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
     __table_args__ = (

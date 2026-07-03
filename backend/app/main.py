@@ -2,8 +2,7 @@
 Application entrypoint.
 
 Initializes the FastAPI application, configures middleware, logging,
-and exposes the health check endpoint. Business routes, models, and
-authentication are intentionally NOT included at this stage.
+and exposes the health check endpoint.
 """
 
 from contextlib import asynccontextmanager
@@ -11,6 +10,10 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.job import router as job_router
+from app.api.organization import router as organization_router
+from app.api.project import router as project_router
+from app.api.queue import router as queue_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import check_db_connection, engine
@@ -25,33 +28,37 @@ logger = get_logger(__name__)
 async def lifespan(app: FastAPI):
     """
     Application lifespan handler.
-
-    Runs startup logic before the app begins serving requests,
-    and shutdown/cleanup logic when the app stops.
     """
-    logger.info("Starting %s in '%s' mode", settings.APP_NAME, settings.APP_ENV)
+
+    logger.info(
+        "Starting %s in '%s' mode",
+        settings.APP_NAME,
+        settings.APP_ENV,
+    )
 
     db_ok = await check_db_connection()
+
     if db_ok:
         logger.info("Database connection established successfully.")
     else:
-        logger.warning("Database connection could NOT be established at startup.")
+        logger.warning(
+            "Database connection could NOT be established at startup."
+        )
 
     yield
 
     logger.info("Shutting down %s", settings.APP_NAME)
+
     await engine.dispose()
+
     logger.info("Database engine disposed. Shutdown complete.")
 
 
 def create_application() -> FastAPI:
     """
     Application factory.
-
-    Builds and configures the FastAPI instance, registering
-    middleware and core endpoints. Domain routers will be
-    included in a later module.
     """
+
     app = FastAPI(
         title=settings.APP_NAME,
         version="0.1.0",
@@ -75,18 +82,39 @@ def create_application() -> FastAPI:
     )
 
     # --------------------------------------------------------------
+    # API Routers
+    # --------------------------------------------------------------
+    app.include_router(
+        organization_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        project_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        queue_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        job_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    # --------------------------------------------------------------
     # Health Endpoint
     # --------------------------------------------------------------
-    @app.get("/health", tags=["Health"], summary="Service health check")
-    async def health_check() -> dict:
-        """
-        Basic liveness/readiness probe.
-
-        Reports application status and database connectivity.
-        Intended for use by load balancers, orchestrators (K8s),
-        and uptime monitors.
-        """
+    @app.get(
+        "/health",
+        tags=["Health"],
+        summary="Service health check",
+    )
+    async def health_check():
         db_status = await check_db_connection()
+
         return {
             "status": "ok" if db_status else "degraded",
             "app_name": settings.APP_NAME,

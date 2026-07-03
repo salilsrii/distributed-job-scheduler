@@ -1,5 +1,8 @@
 """
 Application configuration module.
+
+Loads application settings from environment variables or a .env file.
+Provides a cached Settings instance for dependency injection.
 """
 
 from functools import lru_cache
@@ -60,6 +63,13 @@ class Settings(BaseSettings):
             f"{data.get('DB_PORT')}/"
             f"{data.get('DB_NAME')}"
         )
+
+    # ------------------------------------------------------------------
+    # JWT
+    # ------------------------------------------------------------------
+    SECRET_KEY: str = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_KEY"
+    ALGORITHM: str = "HS256"
+    ACCESS_TOKEN_EXPIRE_MINUTES: int = 1440
 
     # ------------------------------------------------------------------
     # CORS
