@@ -62,6 +62,10 @@ async def get_project(
     "/{project_id}",
     response_model=ProjectResponse,
 )
+@router.patch(
+    "/{project_id}",
+    response_model=ProjectResponse,
+)
 async def update_project(
     project_id: UUID,
     project: ProjectUpdate,

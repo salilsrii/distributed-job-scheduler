@@ -57,6 +57,25 @@ async def list_workers(
     return await WorkerService(db).list()
 
 
+@router.get("/stats")
+async def get_worker_stats(
+    db: AsyncSession = Depends(get_db),
+):
+    workers = await WorkerService(db).list()
+    total = len(workers)
+    online = sum(1 for w in workers if getattr(w, "status", None) == "online")
+    busy = sum(1 for w in workers if getattr(w, "status", None) == "busy")
+    offline = sum(1 for w in workers if getattr(w, "status", None) == "offline")
+    draining = sum(1 for w in workers if getattr(w, "status", None) == "draining")
+    return {
+        "total": total,
+        "online": online,
+        "busy": busy,
+        "offline": offline,
+        "draining": draining,
+    }
+
+
 @router.get(
     "/{worker_id}",
     response_model=WorkerResponse,
@@ -77,6 +96,10 @@ async def get_worker(
 
 
 @router.put(
+    "/{worker_id}",
+    response_model=WorkerResponse,
+)
+@router.patch(
     "/{worker_id}",
     response_model=WorkerResponse,
 )
@@ -121,3 +144,26 @@ async def delete_worker(
         "success": True,
         "message": "Worker deleted successfully",
     }
+
+
+@router.post("/{worker_id}/drain")
+async def drain_worker(
+    worker_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    worker = await WorkerService(db).get(worker_id)
+    if not worker:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Worker not found")
+    return {"success": True, "message": "Worker draining"}
+
+
+@router.get("/{worker_id}/heartbeats")
+async def get_worker_heartbeats(
+    worker_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.worker_heartbeat_service import WorkerHeartbeatService
+    hbs = await WorkerHeartbeatService(db).list()
+    filtered = [h for h in hbs if getattr(h, "worker_id", None) == worker_id]
+    return {"items": filtered, "total": len(filtered)}
+

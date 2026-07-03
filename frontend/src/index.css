@@ -1,0 +1,101 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
+@import "tailwindcss";
+
+/* ── Design Tokens ──────────────────────────────────────── */
+@theme {
+  --color-brand-50:  #eef2ff;
+  --color-brand-100: #e0e7ff;
+  --color-brand-200: #c7d2fe;
+  --color-brand-300: #a5b4fc;
+  --color-brand-400: #818cf8;
+  --color-brand-500: #6366f1;
+  --color-brand-600: #4f46e5;
+  --color-brand-700: #4338ca;
+  --color-brand-800: #3730a3;
+  --color-brand-900: #312e81;
+
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+
+  --animate-spin-slow: spin 3s linear infinite;
+  --animate-fade-in: fadeIn 0.2s ease-out;
+  --animate-slide-up: slideUp 0.3s ease-out;
+}
+
+/* ── Base ───────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; }
+
+html {
+  font-family: 'Inter', system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  margin: 0;
+  background-color: #020617; /* slate-950 */
+  color: #e2e8f0; /* slate-200 */
+  min-height: 100vh;
+}
+
+/* ── Scrollbar ──────────────────────────────────────────── */
+::-webkit-scrollbar { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: #1e293b; }
+::-webkit-scrollbar-thumb { background: #475569; border-radius: 3px; }
+::-webkit-scrollbar-thumb:hover { background: #64748b; }
+
+/* ── Keyframes ──────────────────────────────────────────── */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+@keyframes shimmer {
+  0%   { background-position: -200% 0; }
+  100% { background-position:  200% 0; }
+}
+
+/* ── Skeleton / Loading Shimmer ─────────────────────────── */
+.skeleton {
+  background: linear-gradient(90deg, #1e293b 25%, #334155 50%, #1e293b 75%);
+  background-size: 200% 100%;
+  animation: shimmer 1.5s infinite;
+  border-radius: 6px;
+}
+
+/* ── Glassmorphism Card ─────────────────────────────────── */
+.glass {
+  background: rgba(30, 41, 59, 0.6);
+  backdrop-filter: blur(12px);
+  border: 1px solid rgba(100, 116, 139, 0.2);
+}
+
+/* ── Gradient Text ──────────────────────────────────────── */
+.gradient-text {
+  background: linear-gradient(135deg, #818cf8 0%, #6366f1 50%, #a78bfa 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+/* ── Utility: Hide scrollbar but keep scroll ────────────── */
+.no-scrollbar { scrollbar-width: none; -ms-overflow-style: none; }
+.no-scrollbar::-webkit-scrollbar { display: none; }
+
+/* ── Focus Ring ─────────────────────────────────────────── */
+.focus-ring:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 2px;
+}
+
+/* ── JSON textarea ──────────────────────────────────────── */
+.json-editor {
+  font-family: 'JetBrains Mono', 'Fira Code', 'Cascadia Code', monospace;
+  font-size: 0.8125rem;
+  line-height: 1.6;
+  tab-size: 2;
+}

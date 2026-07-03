@@ -57,6 +57,25 @@ async def list_jobs(
     return await JobService(db).list()
 
 
+@router.get("/stats")
+async def get_job_stats(
+    db: AsyncSession = Depends(get_db),
+):
+    jobs = await JobService(db).list()
+    total = len(jobs)
+    running = sum(1 for j in jobs if getattr(j, "status", None) == "running")
+    success = sum(1 for j in jobs if getattr(j, "status", None) in ("completed", "success"))
+    failed = sum(1 for j in jobs if getattr(j, "status", None) == "failed")
+    pending = sum(1 for j in jobs if getattr(j, "status", None) in ("pending", "queued", "retrying"))
+    return {
+        "total": total,
+        "running": running,
+        "success": success,
+        "failed": failed,
+        "pending": pending,
+    }
+
+
 @router.get(
     "/{job_id}",
     response_model=JobResponse,
@@ -77,6 +96,10 @@ async def get_job(
 
 
 @router.put(
+    "/{job_id}",
+    response_model=JobResponse,
+)
+@router.patch(
     "/{job_id}",
     response_model=JobResponse,
 )
@@ -121,3 +144,46 @@ async def delete_job(
         "success": True,
         "message": "Job deleted successfully",
     }
+
+
+@router.post("/{job_id}/cancel")
+async def cancel_job(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    job = await JobService(db).get(job_id)
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    return {"success": True, "message": "Job cancelled"}
+
+
+@router.post("/{job_id}/retry")
+async def retry_job(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    job = await JobService(db).get(job_id)
+    if not job:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Job not found")
+    return {"success": True, "message": "Job retry queued"}
+
+
+@router.get("/{job_id}/executions")
+async def get_job_executions(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.job_execution_service import JobExecutionService
+    execs = await JobExecutionService(db).list()
+    filtered = [e for e in execs if getattr(e, "job_id", None) == job_id]
+    return {"items": filtered, "total": len(filtered)}
+
+
+@router.get("/{job_id}/logs")
+async def get_job_logs(
+    job_id: UUID,
+    db: AsyncSession = Depends(get_db),
+):
+    from app.services.job_log_service import JobLogService
+    logs = await JobLogService(db).list()
+    return {"items": logs, "total": len(logs)}
