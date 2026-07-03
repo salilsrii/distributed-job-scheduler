@@ -1,4 +1,4 @@
-import { Bell, Search, LogOut, User } from 'lucide-react'
+import { Bell, Search, LogOut, User, Sparkles } from 'lucide-react'
 import { useState } from 'react'
 import { useAuth } from '../../hooks/useAuth'
 import { useNavigate } from 'react-router-dom'
@@ -15,47 +15,60 @@ export function Navbar({ title }) {
   }
 
   return (
-    <header className="h-16 bg-slate-900/80 backdrop-blur-sm border-b border-slate-800 flex items-center justify-between px-6 shrink-0 sticky top-0 z-30">
-      {/* Left — page title injected via prop or current route */}
-      <div className="flex items-center gap-3">
-        {title && <h1 className="text-lg font-semibold text-slate-100">{title}</h1>}
+    <header className="h-20 bg-[#0B0F19]/80 backdrop-blur-md border-b border-slate-800/80 flex items-center justify-between px-8 shrink-0 sticky top-0 z-30 shadow-sm relative overflow-hidden">
+      {/* Animated Ambient Background Glow Orb */}
+      <div className="absolute top-0 left-1/4 w-[500px] h-20 bg-gradient-to-r from-indigo-500/10 via-purple-500/10 to-emerald-500/10 blur-3xl pointer-events-none animate-float" />
+
+      {/* Left — larger page title banner */}
+      <div className="flex items-center gap-3.5 relative z-10">
+        {title && (
+          <div className="flex items-center gap-2.5">
+            <h1 className="text-xl font-extrabold tracking-tight text-white flex items-center gap-2">
+              {title}
+            </h1>
+            <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider bg-indigo-500/10 text-indigo-400 border border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.15)]">
+              Pro
+            </span>
+          </div>
+        )}
       </div>
 
-      {/* Right */}
-      <div className="flex items-center gap-2">
-        {/* Notification bell (placeholder) */}
+      {/* Right Controls */}
+      <div className="flex items-center gap-4 relative z-10">
+        {/* Notification bell */}
         <button
-          className="relative p-2 rounded-lg text-slate-500 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+          className="relative p-2.5 rounded-xl bg-slate-900/80 border border-slate-800 text-slate-400 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition-all shadow-sm active:scale-95"
           aria-label="Notifications"
         >
           <Bell className="size-4" />
-          <span className="absolute top-1.5 right-1.5 size-1.5 rounded-full bg-indigo-500" />
+          <span className="absolute top-2 right-2 size-2 rounded-full bg-indigo-500 shadow-[0_0_8px_rgba(99,102,241,0.8)] animate-pulse" />
         </button>
 
         {/* User menu */}
         <div className="relative">
           <button
             onClick={() => setDropOpen((o) => !o)}
-            className="flex items-center gap-2 px-3 py-1.5 rounded-lg text-sm text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors"
+            className="flex items-center gap-2.5 pl-2 pr-3.5 py-1.5 rounded-xl bg-slate-900/80 border border-slate-800 text-sm font-semibold text-slate-300 hover:text-white hover:bg-slate-800 hover:border-slate-700 transition-all shadow-sm active:scale-95"
             id="user-menu-btn"
             aria-haspopup="true"
             aria-expanded={dropOpen}
           >
-            <span className="size-7 rounded-full bg-gradient-to-br from-indigo-500 to-violet-600 flex items-center justify-center text-xs font-bold text-white">
+            <span className="size-8 rounded-lg bg-gradient-to-br from-indigo-500 via-purple-500 to-violet-600 flex items-center justify-center text-xs font-extrabold text-white shadow-md shadow-indigo-500/20 border border-white/10">
               {user?.name?.charAt(0)?.toUpperCase() ?? user?.email?.charAt(0)?.toUpperCase() ?? 'U'}
             </span>
-            <span className="hidden sm:block max-w-[120px] truncate">{user?.name ?? user?.email ?? 'User'}</span>
+            <span className="hidden sm:block max-w-[140px] truncate">{user?.name ?? user?.email ?? 'User'}</span>
           </button>
 
           {dropOpen && (
             <>
               <div className="fixed inset-0 z-40" onClick={() => setDropOpen(false)} />
-              <div className="absolute right-0 mt-2 w-48 bg-slate-900 border border-slate-700 rounded-xl shadow-2xl z-50 py-1 animate-[fadeIn_0.15s_ease-out]">
-                <div className="px-3 py-2 border-b border-slate-800">
-                  <p className="text-xs font-medium text-slate-300 truncate">{user?.name ?? 'User'}</p>
-                  <p className="text-xs text-slate-500 truncate">{user?.email}</p>
+              <div className="absolute right-0 mt-2.5 w-52 bg-[#0B0F19] border border-slate-700/80 rounded-2xl shadow-2xl shadow-indigo-500/10 z-50 p-2 animate-[slideUp_0.15s_ease-out]">
+                <div className="px-3 py-2.5 border-b border-slate-800/80 mb-1">
+                  <p className="text-xs font-bold text-slate-200 truncate">{user?.name ?? 'User'}</p>
+                  <p className="text-[11px] text-slate-500 truncate mt-0.5">{user?.email}</p>
                 </div>
-                <DropItem icon={User} label="Settings" onClick={() => { navigate(ROUTES.SETTINGS); setDropOpen(false) }} />
+                <DropItem icon={User} label="Account Settings" onClick={() => { navigate(ROUTES.SETTINGS); setDropOpen(false) }} />
+                <div className="my-1 border-t border-slate-800/80" />
                 <DropItem icon={LogOut} label="Sign out" onClick={handleLogout} danger />
               </div>
             </>
@@ -71,10 +84,10 @@ function DropItem({ icon: Icon, label, onClick, danger }) {
     <button
       onClick={onClick}
       className={[
-        'w-full flex items-center gap-2.5 px-3 py-2 text-sm transition-colors',
+        'w-full flex items-center gap-2.5 px-3 py-2.5 rounded-xl text-xs font-semibold transition-all cursor-pointer',
         danger
-          ? 'text-rose-400 hover:bg-rose-950/40'
-          : 'text-slate-400 hover:text-slate-200 hover:bg-slate-800',
+          ? 'text-rose-400 hover:bg-rose-500/10 hover:text-rose-300'
+          : 'text-slate-400 hover:text-white hover:bg-slate-800/80',
       ].join(' ')}
     >
       <Icon className="size-4" />

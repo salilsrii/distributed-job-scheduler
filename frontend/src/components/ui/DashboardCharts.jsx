@@ -125,11 +125,11 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
       return (
-        <div className="bg-slate-900 border border-slate-700/80 p-2.5 rounded-lg shadow-xl text-xs">
-          <p className="font-semibold text-slate-200 mb-1">{label}</p>
+        <div className="bg-[#0B0F19]/95 backdrop-blur-md border border-slate-700/80 p-3.5 rounded-xl shadow-2xl shadow-indigo-500/10 text-xs font-medium">
+          <p className="font-extrabold text-white mb-1.5 border-b border-slate-800 pb-1">{label}</p>
           {payload.map((p, idx) => (
-            <p key={idx} style={{ color: p.color }} className="flex items-center justify-between gap-3">
-              <span>{p.name}:</span>
+            <p key={idx} style={{ color: p.color }} className="flex items-center justify-between gap-4 py-0.5">
+              <span className="text-slate-300">{p.name}:</span>
               <span className="font-mono font-bold">{p.value}</span>
             </p>
           ))}
@@ -142,170 +142,170 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
   return (
     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
       {/* 1. Jobs Processed per Hour */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">1. Jobs Processed per Hour</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">1. Jobs Processed per Hour</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={hourlyData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="hour" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="hour" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="monotone" dataKey="processed" name="Processed Jobs" stroke={COLORS.indigo} strokeWidth={2.5} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+              <Line type="monotone" dataKey="processed" name="Processed Jobs" stroke={COLORS.indigo} strokeWidth={3} dot={{ r: 4, fill: COLORS.indigo }} activeDot={{ r: 6 }} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 2. Job Status Distribution */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">2. Job Status Distribution</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2 flex items-center justify-center">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">2. Job Status Distribution</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0 flex items-center justify-center">
           <ResponsiveContainer width="100%" height="100%">
             <PieChart>
-              <Pie data={pieData} cx="50%" cy="50%" innerRadius={45} outerRadius={70} paddingAngle={4} dataKey="value">
+              <Pie data={pieData} cx="50%" cy="50%" innerRadius={50} outerRadius={75} paddingAngle={4} dataKey="value">
                 {pieData.map((entry, index) => (
                   <Cell key={`cell-${index}`} fill={entry.color} />
                 ))}
               </Pie>
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px' }} />
+              <Legend verticalAlign="bottom" height={36} iconType="circle" wrapperStyle={{ fontSize: '11px', fontWeight: 600, color: '#94a3b8' }} />
             </PieChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 3. Queue Depth */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">3. Queue Depth vs Concurrency</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">3. Queue Depth vs Concurrency</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={queueDepthData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="top" height={24} wrapperStyle={{ fontSize: '10px' }} />
-              <Bar dataKey="depth" name="Pending/Running" fill={COLORS.amber} radius={[4, 4, 0, 0]} />
-              <Bar dataKey="max" name="Max Concurrency" fill={COLORS.slate} radius={[4, 4, 0, 0]} opacity={0.5} />
+              <Legend verticalAlign="top" height={24} wrapperStyle={{ fontSize: '11px', fontWeight: 600 }} />
+              <Bar dataKey="depth" name="Pending/Running" fill={COLORS.amber} radius={[6, 6, 0, 0]} />
+              <Bar dataKey="max" name="Max Concurrency" fill={COLORS.slate} radius={[6, 6, 0, 0]} opacity={0.5} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 4. Worker Utilization */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">4. Worker Utilization (%)</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">4. Worker Utilization (%)</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart layout="vertical" data={workerUtilData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis type="number" domain={[0, 100]} stroke="#64748b" fontSize={10} />
-              <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={10} width={80} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis type="number" domain={[0, 100]} stroke="#64748b" fontSize={11} />
+              <YAxis dataKey="name" type="category" stroke="#64748b" fontSize={11} width={80} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="utilization" name="Utilization %" fill={COLORS.blue} radius={[0, 4, 4, 0]} />
+              <Bar dataKey="utilization" name="Utilization %" fill={COLORS.blue} radius={[0, 6, 6, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 5. Success vs Failure Trend */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">5. Success vs Failure Trend</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">5. Success vs Failure Trend</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={trendData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Area type="monotone" dataKey="success" name="Success" stackId="1" stroke={COLORS.emerald} fill={COLORS.emerald} fillOpacity={0.3} />
-              <Area type="monotone" dataKey="failure" name="Failure" stackId="1" stroke={COLORS.rose} fill={COLORS.rose} fillOpacity={0.4} />
+              <Area type="monotone" dataKey="success" name="Success" stackId="1" stroke={COLORS.emerald} strokeWidth={2} fill={COLORS.emerald} fillOpacity={0.3} />
+              <Area type="monotone" dataKey="failure" name="Failure" stackId="1" stroke={COLORS.rose} strokeWidth={2} fill={COLORS.rose} fillOpacity={0.4} />
             </AreaChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 6. Jobs by Priority */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">6. Jobs by Priority Tier</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">6. Jobs by Priority Tier</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={priorityData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="tier" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="tier" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Legend verticalAlign="top" height={24} wrapperStyle={{ fontSize: '10px' }} />
+              <Legend verticalAlign="top" height={24} wrapperStyle={{ fontSize: '11px', fontWeight: 600 }} />
               <Bar dataKey="normal" name="Normal" stackId="a" fill={COLORS.slate} />
               <Bar dataKey="high" name="High" stackId="a" fill={COLORS.orange} />
-              <Bar dataKey="critical" name="Critical" stackId="a" fill={COLORS.rose} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="critical" name="Critical" stackId="a" fill={COLORS.rose} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 7. Worker Heartbeats */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">7. Worker Heartbeat Latency (ms)</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">7. Worker Heartbeat Latency (ms)</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={heartbeatData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="worker" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="worker" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="latencyMs" name="Ping (ms)" fill={COLORS.emerald} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="latencyMs" name="Ping (ms)" fill={COLORS.emerald} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 8. Queue Throughput */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">8. Queue Throughput (Completed Jobs)</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">8. Queue Throughput (Completed Jobs)</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={throughputData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="stepAfter" dataKey="completed" name="Completed" stroke={COLORS.violet} strokeWidth={2} dot={false} />
+              <Line type="stepAfter" dataKey="completed" name="Completed" stroke={COLORS.violet} strokeWidth={3} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 9. Retry Count by Job */}
-      <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">9. Top Retried Jobs</CardTitle></CardHeader>
-        <CardContent className="h-60 pt-2">
+      <Card className="flex flex-col h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">9. Top Retried Jobs</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={retryData}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="job" stroke="#64748b" fontSize={10} />
-              <YAxis stroke="#64748b" fontSize={10} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
+              <XAxis dataKey="job" stroke="#64748b" fontSize={11} />
+              <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />
-              <Bar dataKey="retries" name="Retries" fill={COLORS.rose} radius={[4, 4, 0, 0]} />
+              <Bar dataKey="retries" name="Retries" fill={COLORS.rose} radius={[6, 6, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </CardContent>
       </Card>
 
       {/* 10. Daily Executions */}
-      <Card className="flex flex-col md:col-span-2 lg:col-span-3">
-        <CardHeader><CardTitle className="text-sm">10. 7-Day Total Executions Volume</CardTitle></CardHeader>
-        <CardContent className="h-64 pt-2">
+      <Card className="flex flex-col md:col-span-2 lg:col-span-3 h-80 p-6">
+        <CardHeader className="p-0 pb-3 border-b border-slate-800/80"><CardTitle className="text-sm font-bold text-slate-200">10. 7-Day Total Executions Volume</CardTitle></CardHeader>
+        <CardContent className="flex-1 pt-4 min-h-0 p-0">
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={dailyData}>
               <defs>
                 <linearGradient id="colorExec" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor={COLORS.indigo} stopOpacity={0.4}/>
+                  <stop offset="5%" stopColor={COLORS.indigo} stopOpacity={0.5}/>
                   <stop offset="95%" stopColor={COLORS.indigo} stopOpacity={0}/>
                 </linearGradient>
               </defs>
-              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.3} />
               <XAxis dataKey="day" stroke="#64748b" fontSize={11} />
               <YAxis stroke="#64748b" fontSize={11} />
               <Tooltip content={<CustomTooltip />} />

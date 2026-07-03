@@ -106,7 +106,7 @@ export default function Workers() {
   }
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -117,48 +117,48 @@ export default function Workers() {
           <p className="text-xs text-slate-500">Distributed execution cluster telemetry, resource utilization, and lifecycle control</p>
         </div>
 
-        <Button variant="ghost" size="sm" icon={RefreshCw} onClick={() => refetch()}>Refresh Cluster</Button>
+        <Button variant="ghost" size="md" icon={RefreshCw} onClick={() => refetch()}>Refresh Cluster</Button>
       </div>
 
       {/* 4 Status Summary Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         {[
           { label: 'Online Nodes',   key: 'online',   color: 'text-emerald-400', icon: Activity },
           { label: 'Busy Nodes',     key: 'busy',     color: 'text-amber-400',   icon: Zap },
           { label: 'Draining',       key: 'draining', color: 'text-orange-400',  icon: PowerOff },
           { label: 'Offline Nodes',  key: 'offline',  color: 'text-slate-500',   icon: Server },
         ].map(({ label, key, color, icon: Icon }) => (
-          <div key={key} className="bg-slate-900/80 border border-slate-800 rounded-xl p-4 flex items-center justify-between shadow-sm">
+          <div key={key} className="bg-[#0B0F19] border border-slate-800/80 rounded-[20px] p-5 flex items-center justify-between shadow-xl hover:border-slate-700/80 transition-all duration-300 card-lift">
             <div>
-              <span className="text-xs text-slate-500 block font-medium">{label}</span>
-              <span className={`text-2xl font-bold tabular-nums mt-0.5 block ${color}`}>{counts[key] ?? 0}</span>
+              <span className="text-xs text-slate-500 block font-semibold uppercase tracking-wider">{label}</span>
+              <span className={`text-3xl font-extrabold tabular-nums mt-1 block ${color}`}>{counts[key] ?? 0}</span>
             </div>
-            <div className="size-10 rounded-xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center">
-              <Icon className={`size-5 ${color}`} />
+            <div className="size-12 rounded-2xl bg-slate-800/80 border border-slate-700/50 flex items-center justify-center shadow-inner">
+              <Icon className={`size-6 ${color}`} />
             </div>
           </div>
         ))}
       </div>
 
       {/* Search & Status Toolbar */}
-      <div className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between gap-3 flex-wrap shadow-sm">
-        <div className="flex items-center gap-2 flex-1 flex-wrap">
-          <div className="relative max-w-sm flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500 pointer-events-none" />
+      <div className="bg-[#0B0F19] border border-slate-800/80 p-4 rounded-[20px] flex items-center justify-between gap-4 flex-wrap shadow-xl">
+        <div className="flex items-center gap-3 flex-1 flex-wrap">
+          <div className="relative max-w-sm flex-1 min-w-[220px]">
+            <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500 pointer-events-none" />
             <input type="search" placeholder="Search by hostname or IP address…" value={search}
               onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-              className="w-full pl-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+              className="w-full pl-10 h-10 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-100 text-sm placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-all duration-200"
             />
           </div>
           <select value={statusF} onChange={(e) => { setStatusF(e.target.value); setPage(1) }}
-            className="h-8 px-3 rounded-lg bg-slate-800 border border-slate-700 text-xs text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer">
+            className="h-10 px-3 rounded-xl bg-slate-950/80 border border-slate-800 text-xs font-semibold text-slate-300 focus:outline-none focus:border-indigo-500 cursor-pointer transition-colors">
             <option value="">All Statuses</option>
             {['online', 'busy', 'draining', 'offline'].map((s) => (
               <option key={s} value={s}>{s.charAt(0).toUpperCase() + s.slice(1)}</option>
             ))}
           </select>
           {(search || statusF) && (
-            <button onClick={() => { setSearch(''); setStatusF(''); setPage(1) }} className="text-xs text-rose-400 hover:text-rose-300 font-medium px-2">
+            <button onClick={() => { setSearch(''); setStatusF(''); setPage(1) }} className="text-xs text-rose-400 hover:text-rose-300 font-semibold px-3 py-2 rounded-lg hover:bg-rose-950/30 transition-colors">
               Reset Filters
             </button>
           )}
@@ -224,7 +224,7 @@ function WorkerCard({ worker: w, onAction }) {
   const latencyVal = w.latency ?? '14ms'
 
   return (
-    <div className={`rounded-2xl border bg-gradient-to-br p-5 space-y-5 hover:shadow-xl transition-all duration-200 flex flex-col justify-between ${STATUS_BG[w.status] ?? 'bg-slate-900 border-slate-800'}`}>
+    <div className={`rounded-[20px] border bg-gradient-to-br p-6 space-y-5 shadow-xl hover:border-slate-700/80 transition-all duration-300 card-lift flex flex-col justify-between ${STATUS_BG[w.status] ?? 'bg-[#0B0F19] border-slate-800'}`}>
       <div className="space-y-4">
         {/* Top bar */}
         <div className="flex items-start justify-between gap-2">

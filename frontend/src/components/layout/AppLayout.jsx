@@ -17,12 +17,14 @@ export function AppLayout() {
   const title = PAGE_TITLES[location.pathname] ?? 'Distributed Job Scheduler'
 
   return (
-    <div className="flex h-screen overflow-hidden bg-slate-950">
+    <div className="flex h-screen overflow-hidden bg-[#0B0F19]">
       <Sidebar />
-      <div className="flex-1 flex flex-col min-w-0 overflow-hidden">
+      <div className="flex-1 flex flex-col min-w-0 overflow-hidden relative">
         <Navbar title={title} />
-        <main className="flex-1 overflow-y-auto p-6">
-          <Outlet />
+        <main className="flex-1 overflow-y-auto p-8 scroll-smooth">
+          <div className="max-w-7xl mx-auto space-y-8">
+            <Outlet />
+          </div>
         </main>
       </div>
     </div>

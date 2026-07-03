@@ -132,7 +132,7 @@ export default function Projects() {
   const totalJobs   = projectsList.reduce((acc, p) => acc + (p.job_count || 0), 0)
 
   return (
-    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-6">
+    <motion.div initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} className="space-y-8">
       {/* Header */}
       <div className="flex flex-wrap items-center justify-between gap-4">
         <div>
@@ -143,58 +143,58 @@ export default function Projects() {
           <p className="text-xs text-slate-500">Logical containers organizing queues, workers, and background task workloads</p>
         </div>
 
-        <div className="flex items-center gap-2">
-          <Button variant="ghost" size="sm" icon={RefreshCw} onClick={() => refetch()}>Refresh</Button>
-          <Button variant="primary" size="sm" icon={Plus} onClick={() => { setForm({ name: '', description: '' }); setFormErr({}); setCreateModal(true) }}>
+        <div className="flex items-center gap-3">
+          <Button variant="ghost" size="md" icon={RefreshCw} onClick={() => refetch()}>Refresh</Button>
+          <Button variant="primary" size="md" icon={Plus} onClick={() => { setForm({ name: '', description: '' }); setFormErr({}); setCreateModal(true) }}>
             New Project
           </Button>
         </div>
       </div>
 
       {/* Summary strip */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-sm">
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+        <div className="bg-[#0B0F19] border border-slate-800/80 p-6 rounded-[20px] shadow-xl hover:border-slate-700/80 transition-all duration-300 card-lift flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-slate-500 block">Active Namespaces</span>
-            <span className="text-2xl font-bold text-indigo-400 mt-0.5 block tabular-nums">{projectsList.length}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Active Namespaces</span>
+            <span className="text-3xl font-extrabold text-indigo-400 mt-1 block tabular-nums">{projectsList.length}</span>
           </div>
-          <div className="size-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-            <FolderKanban className="size-5 text-indigo-400" />
+          <div className="size-12 rounded-2xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center shadow-inner">
+            <FolderKanban className="size-6 text-indigo-400" />
           </div>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-sm">
+        <div className="bg-[#0B0F19] border border-slate-800/80 p-6 rounded-[20px] shadow-xl hover:border-slate-700/80 transition-all duration-300 card-lift flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-slate-500 block">Total Allocated Queues</span>
-            <span className="text-2xl font-bold text-violet-400 mt-0.5 block tabular-nums">{totalQueues}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Total Allocated Queues</span>
+            <span className="text-3xl font-extrabold text-violet-400 mt-1 block tabular-nums">{totalQueues}</span>
           </div>
-          <div className="size-10 rounded-xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center">
-            <Layers className="size-5 text-violet-400" />
+          <div className="size-12 rounded-2xl bg-violet-500/10 border border-violet-500/20 flex items-center justify-center shadow-inner">
+            <Layers className="size-6 text-violet-400" />
           </div>
         </div>
 
-        <div className="bg-slate-900/80 border border-slate-800 p-4 rounded-xl flex items-center justify-between shadow-sm">
+        <div className="bg-[#0B0F19] border border-slate-800/80 p-6 rounded-[20px] shadow-xl hover:border-slate-700/80 transition-all duration-300 card-lift flex items-center justify-between">
           <div>
-            <span className="text-xs font-medium text-slate-500 block">Total Registered Jobs</span>
-            <span className="text-2xl font-bold text-emerald-400 mt-0.5 block tabular-nums">{totalJobs}</span>
+            <span className="text-xs font-semibold uppercase tracking-wider text-slate-500 block">Total Registered Jobs</span>
+            <span className="text-3xl font-extrabold text-emerald-400 mt-1 block tabular-nums">{totalJobs}</span>
           </div>
-          <div className="size-10 rounded-xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center">
-            <Briefcase className="size-5 text-emerald-400" />
+          <div className="size-12 rounded-2xl bg-emerald-500/10 border border-emerald-500/20 flex items-center justify-center shadow-inner">
+            <Briefcase className="size-6 text-emerald-400" />
           </div>
         </div>
       </div>
 
       {/* Search Bar */}
-      <div className="bg-slate-900/80 border border-slate-800 p-3.5 rounded-xl flex items-center justify-between gap-3 shadow-sm">
+      <div className="bg-[#0B0F19] border border-slate-800/80 p-4 rounded-[20px] flex items-center justify-between gap-4 shadow-xl">
         <div className="relative max-w-md flex-1">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500 pointer-events-none" />
+          <Search className="absolute left-3.5 top-1/2 -translate-y-1/2 size-4 text-slate-500 pointer-events-none" />
           <input
             type="search" placeholder="Search by project name or description…" value={search}
             onChange={(e) => { setSearch(e.target.value); setPage(1) }}
-            className="w-full pl-9 h-8 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-xs placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-colors"
+            className="w-full pl-10 h-10 rounded-xl bg-slate-950/80 border border-slate-800 text-slate-100 text-sm placeholder:text-slate-500 focus:outline-none focus:border-indigo-500 transition-all duration-200"
           />
         </div>
-        {search && <button onClick={() => { setSearch(''); setPage(1) }} className="text-xs text-rose-400 hover:text-rose-300 font-medium px-2">Clear</button>}
+        {search && <button onClick={() => { setSearch(''); setPage(1) }} className="text-xs text-rose-400 hover:text-rose-300 font-semibold px-3 py-1.5 rounded-lg hover:bg-rose-950/30 transition-colors">Clear Filter</button>}
       </div>
 
       {/* Projects Table */}

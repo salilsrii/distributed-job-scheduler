@@ -150,66 +150,70 @@ export default function Dashboard() {
       initial={{ opacity: 0, y: 8 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ duration: 0.3 }}
-      className="space-y-8"
+      className="space-y-10"
     >
       {/* Live Header Bar */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/80 border border-slate-800 p-4 rounded-2xl shadow-sm backdrop-blur-md">
-        <div className="flex items-center gap-3">
-          <div className="size-3 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_8px_rgba(16,185,129,0.8)]" />
+      <div className="flex flex-wrap items-center justify-between gap-4 bg-[#0B0F19] border border-slate-800/80 p-6 rounded-[20px] shadow-xl backdrop-blur-md">
+        <div className="flex items-center gap-3.5">
+          <div className="size-3.5 rounded-full bg-emerald-500 animate-pulse shadow-[0_0_10px_rgba(16,185,129,0.8)]" />
           <div>
-            <h1 className="text-base font-bold text-slate-100 flex items-center gap-2">
+            <h1 className="text-lg font-extrabold text-white tracking-tight flex items-center gap-2.5">
               System Analytics & Telemetry
-              <span className="px-2 py-0.5 rounded-full text-[10px] uppercase font-bold bg-indigo-500/10 text-indigo-400 border border-indigo-500/20">
+              <span className="px-2.5 py-0.5 rounded-full text-[10px] uppercase font-extrabold tracking-wider bg-indigo-500/15 text-indigo-400 border border-indigo-500/30">
                 Enterprise
               </span>
             </h1>
-            <p className="text-xs text-slate-500">
+            <p className="text-xs font-medium text-slate-400 mt-0.5">
               {liveMode ? 'Real-time telemetry active · Auto-refreshing every 5s' : 'Live polling paused'}
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-3">
           <button
             onClick={() => setLiveMode(!liveMode)}
-            className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1.5 transition-all ${
+            className={`px-4 py-2 rounded-xl text-xs font-bold uppercase tracking-wider flex items-center gap-2 transition-all shadow-md cursor-pointer ${
               liveMode
-                ? 'bg-emerald-500/10 text-emerald-400 border border-emerald-500/30 hover:bg-emerald-500/20'
-                : 'bg-slate-800 text-slate-400 border border-slate-700 hover:text-slate-200'
+                ? 'bg-emerald-500/15 text-emerald-400 border border-emerald-500/40 hover:bg-emerald-500/25 shadow-emerald-950/50'
+                : 'bg-slate-900 text-slate-400 border border-slate-700/80 hover:text-white hover:border-slate-600'
             }`}
           >
-            <Activity className="size-3.5" />
+            <Activity className="size-4" />
             {liveMode ? 'Live: ON (5s)' : 'Live: OFF'}
           </button>
         </div>
       </div>
 
       {/* ── 7. Dashboard Quick Actions Bar ───────────────────────────────── */}
-      <div className="flex flex-wrap items-center justify-between gap-4 bg-slate-900/60 border border-slate-800/80 p-4 rounded-xl">
-        <div className="flex items-center gap-2">
-          <Zap className="size-4 text-indigo-400" />
-          <span className="text-sm font-semibold text-slate-200">Quick Actions</span>
-          <span className="text-xs text-slate-500 hidden sm:inline">· Dispatch tasks or manage infrastructure</span>
+      <div className="flex flex-wrap items-center justify-between gap-6 bg-gradient-to-r from-[#0B0F19] via-slate-900/60 to-[#0B0F19] border border-slate-800/80 p-6 rounded-[20px] shadow-xl">
+        <div className="flex items-center gap-3">
+          <div className="size-10 rounded-xl bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center text-indigo-400 shadow-inner">
+            <Zap className="size-5" />
+          </div>
+          <div>
+            <span className="text-base font-extrabold text-white block tracking-tight">Quick Actions</span>
+            <span className="text-xs font-medium text-slate-400">Dispatch tasks or manage cluster infrastructure</span>
+          </div>
         </div>
-        <div className="flex flex-wrap items-center gap-2.5">
+        <div className="flex flex-wrap items-center gap-3">
           <Link to={ROUTES.PROJECTS}>
-            <Button variant="secondary" size="sm" icon={FolderKanban} className="bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700">
+            <Button variant="secondary" size="md" icon={FolderKanban}>
               New Project
             </Button>
           </Link>
           <Link to={ROUTES.QUEUES}>
-            <Button variant="secondary" size="sm" icon={Layers} className="bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700">
+            <Button variant="secondary" size="md" icon={Layers}>
               New Queue
             </Button>
           </Link>
           <Link to={ROUTES.JOB_CREATE}>
-            <Button variant="primary" size="sm" icon={Briefcase} className="bg-indigo-600 hover:bg-indigo-500 text-white shadow-lg shadow-indigo-600/20">
+            <Button variant="primary" size="md" icon={Briefcase}>
               New Job
             </Button>
           </Link>
           <Button
             variant="ghost"
-            size="sm"
+            size="md"
             icon={RefreshCw}
             onClick={() => {
               projectsQ.refetch()
@@ -217,7 +221,7 @@ export default function Dashboard() {
               jobsQ.refetch()
               workersQ.refetch()
             }}
-            className="text-slate-400 hover:text-slate-200 border border-slate-800 hover:bg-slate-800"
+            className="text-slate-400 hover:text-white border border-slate-800/80 hover:bg-slate-800/80"
           >
             Refresh
           </Button>
@@ -225,7 +229,7 @@ export default function Dashboard() {
       </div>
 
       {/* ── 1. Top Statistics Grid (Real API Data) ───────────────────────── */}
-      <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-6 gap-6">
         <StatCard title="Projects"       value={totalProjects}      icon={FolderKanban} color="indigo" />
         <StatCard title="Queues"         value={totalQueues}        icon={Layers}       color="violet" />
         <StatCard title="Total Jobs"     value={totalJobs}          icon={Briefcase}    color="blue" />
@@ -234,8 +238,8 @@ export default function Dashboard() {
         <StatCard title="Active Workers" value={activeWorkers}      icon={Cpu}          color="emerald" subtitle="Online nodes" />
       </div>
 
-      {/* Additional 10 Telemetry Cards */}
-      <div className="grid grid-cols-2 sm:grid-cols-5 lg:grid-cols-10 gap-2.5">
+      {/* Additional 10 Telemetry Cards (2 rows of 5 cards with generous breathing room) */}
+      <div className="grid grid-cols-1 sm:grid-cols-3 lg:grid-cols-5 gap-6">
         <StatCard title="Completed"     value={completedJobs}      icon={CheckCircle2} color="emerald" />
         <StatCard title="Failed"        value={failedJobs}         icon={XCircle}      color="rose" />
         <StatCard title="Retrying"      value={retryJobs}          icon={RotateCcw}    color="amber" />
