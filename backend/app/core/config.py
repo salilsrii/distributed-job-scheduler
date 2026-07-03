@@ -51,6 +51,11 @@ class Settings(BaseSettings):
     @classmethod
     def build_database_url(cls, value, info):
         if value:
+            if isinstance(value, str):
+                if value.startswith("postgres://"):
+                    return value.replace("postgres://", "postgresql+asyncpg://", 1)
+                elif value.startswith("postgresql://") and not value.startswith("postgresql+asyncpg://"):
+                    return value.replace("postgresql://", "postgresql+asyncpg://", 1)
             return value
 
         data = info.data
