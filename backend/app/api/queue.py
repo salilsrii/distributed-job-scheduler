@@ -74,10 +74,6 @@ async def get_queue(
     "/{queue_id}",
     response_model=QueueResponse,
 )
-@router.patch(
-    "/{queue_id}",
-    response_model=QueueResponse,
-)
 async def update_queue(
     queue_id: UUID,
     queue: QueueUpdate,
@@ -116,48 +112,3 @@ async def delete_queue(
         "success": True,
         "message": "Queue deleted successfully",
     }
-
-
-@router.post("/{queue_id}/pause")
-async def pause_queue(
-    queue_id: UUID,
-    db: AsyncSession = Depends(get_db),
-):
-    queue = await QueueService(db).get(queue_id)
-    if not queue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Queue not found")
-    return {"success": True, "message": "Queue paused"}
-
-
-@router.post("/{queue_id}/resume")
-async def resume_queue(
-    queue_id: UUID,
-    db: AsyncSession = Depends(get_db),
-):
-    queue = await QueueService(db).get(queue_id)
-    if not queue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Queue not found")
-    return {"success": True, "message": "Queue resumed"}
-
-
-@router.post("/{queue_id}/flush")
-async def flush_queue(
-    queue_id: UUID,
-    db: AsyncSession = Depends(get_db),
-):
-    queue = await QueueService(db).get(queue_id)
-    if not queue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Queue not found")
-    return {"success": True, "message": "Queue flushed"}
-
-
-@router.get("/{queue_id}/stats")
-async def get_queue_stats(
-    queue_id: UUID,
-    db: AsyncSession = Depends(get_db),
-):
-    queue = await QueueService(db).get(queue_id)
-    if not queue:
-        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Queue not found")
-    return {"active": 0, "waiting": 0, "completed": 0, "failed": 0, "paused": False}
-

@@ -10,7 +10,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
-from app.api.auth import router as auth_router, users_router
+from app.api.auth import router as auth_router
 from app.api.dead_letter_queue import router as dead_letter_queue_router
 from app.api.job import router as job_router
 from app.api.job_execution import router as job_execution_router
@@ -95,11 +95,6 @@ def create_application() -> FastAPI:
     # --------------------------------------------------------------
     app.include_router(
         auth_router,
-        prefix=settings.API_V1_PREFIX,
-    )
-
-    app.include_router(
-        users_router,
         prefix=settings.API_V1_PREFIX,
     )
 

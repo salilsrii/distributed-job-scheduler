@@ -13,9 +13,6 @@ apiClient.interceptors.request.use(
   (config) => {
     const token = localStorage.getItem('access_token')
     if (token) config.headers.Authorization = `Bearer ${token}`
-    if (config.method?.toLowerCase() === 'patch') {
-      config.method = 'put'
-    }
     return config
   },
   (error) => Promise.reject(error),
@@ -23,12 +20,7 @@ apiClient.interceptors.request.use(
 
 // ── Response interceptor — normalise errors, handle 401 ─────────
 apiClient.interceptors.response.use(
-  (response) => {
-    if (Array.isArray(response.data)) {
-      response.data = { items: response.data, total: response.data.length }
-    }
-    return response
-  },
+  (response) => response,
   (error) => {
     if (error.response?.status === 401) {
       localStorage.removeItem('access_token')

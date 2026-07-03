@@ -13,10 +13,7 @@ from app.db.session import get_db
 from app.models.user import User
 from app.repositories.user_repository import UserRepository
 
-from fastapi.security import HTTPBearer, HTTPAuthorizationCredentials
-
 settings = get_settings()
-security_scheme = HTTPBearer(auto_error=False)
 
 
 async def get_user_repository(
@@ -26,21 +23,20 @@ async def get_user_repository(
 
 
 async def get_current_user(
-    auth_header: Annotated[HTTPAuthorizationCredentials | None, Depends(security_scheme)] = None,
+    token: str,
     repository: UserRepository = Depends(get_user_repository),
 ) -> User:
     """
-    Returns the currently authenticated user by extracting token from Authorization: Bearer header.
+    Returns the currently authenticated user.
+
+    NOTE:
+    This will be connected to OAuth2Bearer in auth.py.
     """
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials.",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
-    if auth_header is None or not auth_header.credentials:
-        raise credentials_exception
-    token = auth_header.credentials
 
     try:
         payload = jwt.decode(
