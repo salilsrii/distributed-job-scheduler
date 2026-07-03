@@ -13,6 +13,7 @@ import Projects   from './pages/Projects'
 import Queues     from './pages/Queues'
 import Jobs       from './pages/Jobs'
 import CreateJob  from './pages/CreateJob'
+import JobDetail  from './pages/JobDetail'
 import Workers    from './pages/Workers'
 import Settings   from './pages/Settings'
 
@@ -45,6 +46,7 @@ function AppWithToast() {
             <Route path={ROUTES.QUEUES}     element={<Queues />} />
             <Route path={ROUTES.JOBS}       element={<Jobs />} />
             <Route path={ROUTES.JOB_CREATE} element={<CreateJob />} />
+            <Route path={ROUTES.JOB_DETAIL} element={<JobDetail />} />
             <Route path={ROUTES.WORKERS}    element={<Workers />} />
             <Route path={ROUTES.SETTINGS}   element={<Settings />} />
             {/* Catch-all */}
