@@ -13,10 +13,8 @@ pwd_context = CryptContext(
     deprecated="auto",
 )
 
-ALGORITHM = "HS256"
-
-# Change this in production
-SECRET_KEY = "CHANGE_THIS_TO_A_LONG_RANDOM_SECRET_KEY"
+ALGORITHM = settings.ALGORITHM
+SECRET_KEY = settings.SECRET_KEY
 
 
 def verify_password(plain_password: str, hashed_password: str) -> bool:

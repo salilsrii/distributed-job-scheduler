@@ -35,6 +35,9 @@ async def get_current_user(
     """
     Returns the currently authenticated user.
     """
+    print(f"DEBUG [get_current_user] Raw Bearer token: {token!r}")
+    print(f"DEBUG [get_current_user] SECRET_KEY (first 10 chars): {settings.SECRET_KEY[:10]!r}")
+    print(f"DEBUG [get_current_user] ALGORITHM: {settings.ALGORITHM!r}")
 
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -48,16 +51,21 @@ async def get_current_user(
             settings.SECRET_KEY,
             algorithms=[settings.ALGORITHM],
         )
+        print(f"DEBUG [get_current_user] Decoded JWT payload: {payload!r}")
 
         user_email = payload.get("sub")
+        print(f"DEBUG [get_current_user] Sub claim: {user_email!r}")
 
         if user_email is None:
+            print("DEBUG [get_current_user] Sub claim is None, raising 401")
             raise credentials_exception
 
-    except JWTError:
+    except JWTError as e:
+        print(f"DEBUG [get_current_user] JWT decode failed with error: {e}")
         raise credentials_exception
 
     user = await repository.get_by_email(user_email)
+    print(f"DEBUG [get_current_user] repository.get_by_email() returned user: {user is not None}")
 
     if user is None:
         raise credentials_exception
