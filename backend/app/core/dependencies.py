@@ -5,6 +5,7 @@ Shared FastAPI dependencies.
 from typing import Annotated
 
 from fastapi import Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -15,6 +16,11 @@ from app.repositories.user_repository import UserRepository
 
 settings = get_settings()
 
+# OAuth2 Bearer authentication
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/v1/auth/token",
+)
+
 
 async def get_user_repository(
     session: AsyncSession = Depends(get_db),
@@ -23,15 +29,13 @@ async def get_user_repository(
 
 
 async def get_current_user(
-    token: str,
+    token: str = Depends(oauth2_scheme),
     repository: UserRepository = Depends(get_user_repository),
 ) -> User:
     """
     Returns the currently authenticated user.
-
-    NOTE:
-    This will be connected to OAuth2Bearer in auth.py.
     """
+
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid authentication credentials.",

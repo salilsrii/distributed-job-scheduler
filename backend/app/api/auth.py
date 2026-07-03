@@ -4,13 +4,17 @@ Authentication API router.
 Exposes authentication and token endpoints under /api/v1/auth.
 """
 
+from datetime import timedelta
+
 from fastapi import APIRouter, Depends, HTTPException, status
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.dependencies import CurrentUser
 from app.db.session import get_db
 from app.schemas.auth import LoginRequest, RegisterRequest, Token
 from app.services.auth_service import AuthService
+from app.core.security import create_access_token, settings
 
 router = APIRouter(
     prefix="/auth",
@@ -18,12 +22,36 @@ router = APIRouter(
 )
 
 
+# -----------------------------
+# JSON Login (used by React)
+# -----------------------------
 @router.post("/login", response_model=Token)
 async def login(
     data: LoginRequest,
     db: AsyncSession = Depends(get_db),
 ):
     try:
+        return await AuthService(db).login(data)
+    except ValueError as e:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=str(e),
+        )
+
+
+# -----------------------------
+# OAuth2 Login (used by Swagger Authorize)
+# -----------------------------
+@router.post("/token", response_model=Token)
+async def token_login(
+    form_data: OAuth2PasswordRequestForm = Depends(),
+    db: AsyncSession = Depends(get_db),
+):
+    try:
+        data = LoginRequest(
+            email=form_data.username,
+            password=form_data.password,
+        )
         return await AuthService(db).login(data)
     except ValueError as e:
         raise HTTPException(
@@ -60,17 +88,21 @@ async def get_me(current_user: CurrentUser):
 
 @router.post("/logout")
 async def logout():
-    return {"success": True, "message": "Logged out successfully"}
+    return {
+        "success": True,
+        "message": "Logged out successfully",
+    }
 
 
 @router.post("/refresh", response_model=Token)
 async def refresh_token(current_user: CurrentUser):
-    from datetime import timedelta
-    from app.core.security import create_access_token, settings
     access_token = create_access_token(
         subject=current_user.email,
-        expires_delta=timedelta(minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES),
+        expires_delta=timedelta(
+            minutes=settings.ACCESS_TOKEN_EXPIRE_MINUTES,
+        ),
     )
+
     return {
         "access_token": access_token,
         "token_type": "bearer",
