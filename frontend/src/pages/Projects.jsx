@@ -13,21 +13,21 @@ import { formatDateTime, formatRelative } from '../utils/formatters'
 import { toast } from '../hooks/useToast'
 
 const MOCK_PROJECTS = [
-  { id: 'p1', name: 'Data Pipeline',     description: 'ETL & ingestion jobs',      queue_count: 3, job_count: 142, created_at: '2024-01-15T10:00:00Z' },
-  { id: 'p2', name: 'Email Campaigns',   description: 'Marketing automation',       queue_count: 1, job_count: 58,  created_at: '2024-02-01T09:00:00Z' },
-  { id: 'p3', name: 'Report Generation', description: 'Nightly analytics reports',  queue_count: 2, job_count: 310, created_at: '2023-12-01T08:00:00Z' },
-  { id: 'p4', name: 'Media Processing',  description: 'Transcoding & thumbnails',   queue_count: 4, job_count: 75,  created_at: '2024-03-10T11:00:00Z' },
+  { id: 'p1', name: 'Data Pipeline', description: 'ETL & ingestion jobs', queue_count: 3, job_count: 142, created_at: '2024-01-15T10:00:00Z' },
+  { id: 'p2', name: 'Email Campaigns', description: 'Marketing automation', queue_count: 1, job_count: 58, created_at: '2024-02-01T09:00:00Z' },
+  { id: 'p3', name: 'Report Generation', description: 'Nightly analytics reports', queue_count: 2, job_count: 310, created_at: '2023-12-01T08:00:00Z' },
+  { id: 'p4', name: 'Media Processing', description: 'Transcoding & thumbnails', queue_count: 4, job_count: 75, created_at: '2024-03-10T11:00:00Z' },
 ]
 
 const PAGE_SIZE = 10
 
 export default function Projects() {
   const qc = useQueryClient()
-  const [page,    setPage]    = useState(1)
-  const [search,  setSearch]  = useState('')
-  const [create,  setCreate]  = useState(false)
-  const [delTgt,  setDelTgt]  = useState(null)
-  const [form,    setForm]    = useState({ name: '', description: '' })
+  const [page, setPage] = useState(1)
+  const [search, setSearch] = useState('')
+  const [create, setCreate] = useState(false)
+  const [delTgt, setDelTgt] = useState(null)
+  const [form, setForm] = useState({ name: '', description: '' })
   const [formErr, setFormErr] = useState({})
 
   const { data, isLoading, refetch } = useQuery({
@@ -68,15 +68,33 @@ export default function Projects() {
 
   function handleCreate(e) {
     e.preventDefault()
+
     const errs = {}
-    if (!form.name.trim()) errs.name = 'Name is required'
+
+    if (!form.name.trim()) {
+      errs.name = 'Name is required'
+    }
+
     setFormErr(errs)
+
     if (Object.keys(errs).length) return
-    createMut.mutate(form)
+
+    const user = JSON.parse(localStorage.getItem('user') || '{}')
+
+    if (!user.organization_id) {
+      toast.error('Organization ID not found. Please log in again.')
+      return
+    }
+
+    createMut.mutate({
+      name: form.name,
+      description: form.description,
+      organization_id: user.organization_id,
+    })
   }
 
   const projects = data?.items ?? []
-  const total    = data?.total  ?? 0
+  const total = data?.total ?? 0
 
   return (
     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
@@ -111,32 +129,32 @@ export default function Projects() {
             {isLoading
               ? Array.from({ length: 4 }).map((_, i) => <SkeletonRow key={i} cols={6} />)
               : projects.length === 0
-              ? <EmptyRow cols={6} message="No projects found" />
-              : projects.map((p) => (
-                <tr key={p.id} className="border-b border-slate-800/80 hover:bg-slate-800/30 transition-colors">
-                  <Td>
-                    <div className="flex items-center gap-2.5">
-                      <span className="size-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
-                        <FolderKanban className="size-4 text-indigo-400" />
-                      </span>
-                      <span className="font-medium text-slate-200">{p.name}</span>
-                    </div>
-                  </Td>
-                  <Td className="text-slate-500 max-w-xs truncate">{p.description ?? '—'}</Td>
-                  <Td><Badge variant="blue">{p.queue_count ?? 0} queues</Badge></Td>
-                  <Td><Badge>{p.job_count ?? 0} jobs</Badge></Td>
-                  <Td className="text-slate-500 text-xs">{formatRelative(p.created_at)}</Td>
-                  <Td>
-                    <button
-                      onClick={() => setDelTgt(p)}
-                      className="p-1.5 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
-                      aria-label={`Delete ${p.name}`}
-                    >
-                      <Trash2 className="size-4" />
-                    </button>
-                  </Td>
-                </tr>
-              ))
+                ? <EmptyRow cols={6} message="No projects found" />
+                : projects.map((p) => (
+                  <tr key={p.id} className="border-b border-slate-800/80 hover:bg-slate-800/30 transition-colors">
+                    <Td>
+                      <div className="flex items-center gap-2.5">
+                        <span className="size-8 rounded-lg bg-indigo-500/10 border border-indigo-500/20 flex items-center justify-center">
+                          <FolderKanban className="size-4 text-indigo-400" />
+                        </span>
+                        <span className="font-medium text-slate-200">{p.name}</span>
+                      </div>
+                    </Td>
+                    <Td className="text-slate-500 max-w-xs truncate">{p.description ?? '—'}</Td>
+                    <Td><Badge variant="blue">{p.queue_count ?? 0} queues</Badge></Td>
+                    <Td><Badge>{p.job_count ?? 0} jobs</Badge></Td>
+                    <Td className="text-slate-500 text-xs">{formatRelative(p.created_at)}</Td>
+                    <Td>
+                      <button
+                        onClick={() => setDelTgt(p)}
+                        className="p-1.5 rounded-lg text-slate-600 hover:text-rose-400 hover:bg-rose-950/30 transition-colors"
+                        aria-label={`Delete ${p.name}`}
+                      >
+                        <Trash2 className="size-4" />
+                      </button>
+                    </Td>
+                  </tr>
+                ))
             }
           </Tbody>
         </Table>
