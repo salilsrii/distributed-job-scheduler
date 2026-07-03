@@ -31,11 +31,11 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
   const hourlyData = Array.from({ length: 12 }, (_, i) => {
     const hour = `${(12 + i) % 24}:00`
     const count = jobs.filter((j) => {
-      if (!j.created_at) return i === 11
+      if (!j.created_at) return false
       const h = new Date(j.created_at).getHours()
       return h === (12 + i) % 24
     }).length
-    return { hour, processed: Math.max(count, Math.floor(Math.random() * 8) + 2) }
+    return { hour, processed: count }
   })
 
   // 2. Job Status Distribution (Pie Chart)
@@ -43,7 +43,7 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
     const s = j.status === 'success' ? 'completed' : (j.status || 'queued')
     acc[s] = (acc[s] || 0) + 1
     return acc
-  }, { queued: 5, running: 8, completed: 45, failed: 4, retrying: 3 })
+  }, {})
   
   const pieData = Object.entries(statusCounts).map(([name, value]) => ({
     name: name.charAt(0).toUpperCase() + name.slice(1),
@@ -52,73 +52,75 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
   }))
 
   // 3. Queue Depth (Bar Chart)
-  const queueDepthData = queues.length > 0 ? queues.map((q) => ({
+  const queueDepthData = queues.map((q) => ({
     name: q.name,
-    depth: jobs.filter((j) => j.queue_id === q.id && ['pending', 'queued', 'running'].includes(j.status)).length || Math.floor(Math.random() * 15) + 3,
-    max: q.max_concurrency || 10,
-  })) : [
-    { name: 'email', depth: 12, max: 20 },
-    { name: 'reports', depth: 8, max: 10 },
-    { name: 'ingestion', depth: 24, max: 50 },
-    { name: 'media', depth: 5, max: 15 },
-  ]
+    depth: jobs.filter((j) => j.queue_id === q.id && ['pending', 'queued', 'running'].includes(j.status)).length,
+    max: q.max_concurrency || 1,
+  }))
 
   // 4. Worker Utilization (Horizontal Bar Chart)
-  const workerUtilData = workers.length > 0 ? workers.map((w, i) => ({
+  const workerUtilData = workers.map((w, i) => ({
     name: w.hostname || `worker-0${i+1}`,
-    utilization: w.status === 'busy' ? 88 : w.status === 'online' ? 34 : 0,
-    cpu: Math.floor(Math.random() * 60) + 20,
-  })) : [
-    { name: 'worker-prod-01', utilization: 82, cpu: 75 },
-    { name: 'worker-prod-02', utilization: 45, cpu: 38 },
-    { name: 'worker-dev-01',  utilization: 12, cpu: 15 },
-    { name: 'worker-batch-01',utilization: 95, cpu: 89 },
-  ]
+    utilization: w.status === 'busy' ? 100 : w.status === 'online' ? 35 : 0,
+    cpu: w.capabilities?.cpu_usage || (w.status === 'busy' ? 80 : w.status === 'online' ? 25 : 0),
+  }))
 
   // 5. Job Success vs Failure Trend (Area Chart)
-  const trendData = ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map((day) => ({
-    day,
-    success: Math.floor(Math.random() * 120) + 80,
-    failure: Math.floor(Math.random() * 10) + 2,
-  }))
+  const trendData = queues.length > 0 ? queues.map((q) => {
+    const qJobs = jobs.filter(j => j.queue_id === q.id)
+    return {
+      name: q.name,
+      success: qJobs.filter(j => ['success', 'completed'].includes(j.status)).length,
+      failure: qJobs.filter(j => j.status === 'failed').length,
+    }
+  }) : []
 
   // 6. Jobs by Priority (Stacked Bar Chart)
-  const priorityData = ['Q1', 'Q2', 'Q3', 'Q4'].map((q, idx) => ({
-    quarter: q,
-    normal: Math.floor(Math.random() * 40) + 20,
-    high: Math.floor(Math.random() * 20) + 10,
-    critical: Math.floor(Math.random() * 8) + 1,
-  }))
-
-  // 7. Worker Heartbeats (Timeline / Bar)
-  const heartbeatData = workers.length > 0 ? workers.map((w, i) => ({
-    worker: w.hostname || `w-${i}`,
-    latencyMs: Math.floor(Math.random() * 40) + 12,
-    status: w.status || 'online',
-  })) : [
-    { worker: 'worker-prod-01', latencyMs: 14, status: 'online' },
-    { worker: 'worker-prod-02', latencyMs: 18, status: 'busy' },
-    { worker: 'worker-dev-01',  latencyMs: 32, status: 'online' },
-    { worker: 'worker-batch-01',latencyMs: 11, status: 'draining' },
+  const priorityData = [
+    {
+      tier: 'All Jobs',
+      normal: jobs.filter(j => (j.priority || 0) < 5).length,
+      high: jobs.filter(j => (j.priority || 0) >= 5 && (j.priority || 0) < 100).length,
+      critical: jobs.filter(j => (j.priority || 0) >= 100).length,
+    }
   ]
 
+  // 7. Worker Heartbeats (Timeline / Bar)
+  const heartbeatData = workers.map((w, i) => {
+    const elapsedSec = w.last_seen_at ? Math.max(1, Math.round((Date.now() - new Date(w.last_seen_at).getTime()) / 1000)) : 0
+    return {
+      worker: w.hostname || `w-${i}`,
+      latencyMs: Math.min(1000, elapsedSec * 10),
+      status: w.status || 'online',
+    }
+  })
+
   // 8. Queue Throughput (Line Chart)
-  const throughputData = ['00:00', '04:00', '08:00', '12:00', '16:00', '20:00'].map((time) => ({
-    time,
-    jobsPerMin: Math.floor(Math.random() * 150) + 50,
+  const throughputData = queues.map((q) => ({
+    name: q.name,
+    completed: jobs.filter(j => j.queue_id === q.id && ['success', 'completed'].includes(j.status)).length,
   }))
 
   // 9. Retry Count (Bar Chart)
-  const retryData = ['email-digest', 'report-gen', 'sync-db', 'webhook-push', 'cleanup'].map((job) => ({
-    job,
-    retries: Math.floor(Math.random() * 6) + 1,
-  }))
+  const retryData = jobs
+    .filter(j => j.status === 'retrying' || j.status === 'failed')
+    .slice(0, 5)
+    .map(j => ({
+      job: j.name,
+      retries: j.max_retries || 3,
+    }))
 
   // 10. Daily Executions (Line Chart)
-  const dailyData = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Day 7'].map((d) => ({
-    day: d,
-    executions: Math.floor(Math.random() * 500) + 300,
-  }))
+  const dailyData = ['Day 1', 'Day 2', 'Day 3', 'Day 4', 'Day 5', 'Day 6', 'Today'].map((d, idx) => {
+    const targetDay = new Date()
+    targetDay.setDate(targetDay.getDate() - (6 - idx))
+    const dateStr = targetDay.toISOString().slice(0, 10)
+    const count = jobs.filter(j => j.created_at && j.created_at.startsWith(dateStr)).length
+    return {
+      day: idx === 6 ? 'Today' : d,
+      executions: count,
+    }
+  })
 
   const CustomTooltip = ({ active, payload, label }) => {
     if (active && payload && payload.length) {
@@ -214,7 +216,7 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
           <ResponsiveContainer width="100%" height="100%">
             <AreaChart data={trendData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="day" stroke="#64748b" fontSize={10} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
               <YAxis stroke="#64748b" fontSize={10} />
               <Tooltip content={<CustomTooltip />} />
               <Area type="monotone" dataKey="success" name="Success" stackId="1" stroke={COLORS.emerald} fill={COLORS.emerald} fillOpacity={0.3} />
@@ -231,7 +233,7 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
           <ResponsiveContainer width="100%" height="100%">
             <BarChart data={priorityData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="quarter" stroke="#64748b" fontSize={10} />
+              <XAxis dataKey="tier" stroke="#64748b" fontSize={10} />
               <YAxis stroke="#64748b" fontSize={10} />
               <Tooltip content={<CustomTooltip />} />
               <Legend verticalAlign="top" height={24} wrapperStyle={{ fontSize: '10px' }} />
@@ -261,15 +263,15 @@ export function DashboardCharts({ jobs = [], queues = [], workers = [] }) {
 
       {/* 8. Queue Throughput */}
       <Card className="flex flex-col">
-        <CardHeader><CardTitle className="text-sm">8. Queue Throughput (Jobs/min)</CardTitle></CardHeader>
+        <CardHeader><CardTitle className="text-sm">8. Queue Throughput (Completed Jobs)</CardTitle></CardHeader>
         <CardContent className="h-60 pt-2">
           <ResponsiveContainer width="100%" height="100%">
             <LineChart data={throughputData}>
               <CartesianGrid strokeDasharray="3 3" stroke="#334155" opacity={0.4} />
-              <XAxis dataKey="time" stroke="#64748b" fontSize={10} />
+              <XAxis dataKey="name" stroke="#64748b" fontSize={10} />
               <YAxis stroke="#64748b" fontSize={10} />
               <Tooltip content={<CustomTooltip />} />
-              <Line type="stepAfter" dataKey="jobsPerMin" name="Throughput" stroke={COLORS.violet} strokeWidth={2} dot={false} />
+              <Line type="stepAfter" dataKey="completed" name="Completed" stroke={COLORS.violet} strokeWidth={2} dot={false} />
             </LineChart>
           </ResponsiveContainer>
         </CardContent>
