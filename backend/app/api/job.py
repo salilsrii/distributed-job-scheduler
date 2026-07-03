@@ -1,3 +1,15 @@
+"""
+Job API router.
+
+Exposes full CRUD for the Job resource under /api/v1/jobs.
+Follows the same structure as api/organization.py, api/project.py, and api/queue.py:
+  - POST   /jobs/                create (with duplicate name validation per queue)
+  - GET    /jobs/                list all active
+  - GET    /jobs/{job_id}        get single
+  - PUT    /jobs/{job_id}        update
+  - DELETE /jobs/{job_id}        soft-delete
+"""
+
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, HTTPException, status
@@ -87,11 +99,22 @@ async def update_job(
     return updated
 
 
-@router.delete("/{job_id}")
+@router.delete(
+    "/{job_id}",
+    status_code=status.HTTP_200_OK,
+)
 async def delete_job(
     job_id: UUID,
     db: AsyncSession = Depends(get_db),
 ):
+    job = await JobService(db).get(job_id)
+
+    if job is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Job not found",
+        )
+
     await JobService(db).delete(job_id)
 
     return {

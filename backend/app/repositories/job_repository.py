@@ -1,3 +1,11 @@
+"""
+Job repository.
+
+Extends SoftDeleteRepository with job-specific queries
+that mirror the patterns used by OrganizationRepository,
+ProjectRepository, and QueueRepository.
+"""
+
 import uuid
 
 from sqlalchemy import select
@@ -8,7 +16,7 @@ from app.repositories.base import SoftDeleteRepository
 
 
 class JobRepository(SoftDeleteRepository[Job]):
-    def __init__(self, session: AsyncSession):
+    def __init__(self, session: AsyncSession) -> None:
         super().__init__(Job, session)
 
     async def list_by_queue(

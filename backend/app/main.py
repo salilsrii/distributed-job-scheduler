@@ -10,10 +10,18 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from app.api.auth import router as auth_router
+from app.api.dead_letter_queue import router as dead_letter_queue_router
 from app.api.job import router as job_router
+from app.api.job_execution import router as job_execution_router
+from app.api.job_log import router as job_log_router
 from app.api.organization import router as organization_router
 from app.api.project import router as project_router
 from app.api.queue import router as queue_router
+from app.api.retry_policy import router as retry_policy_router
+from app.api.scheduled_job import router as scheduled_job_router
+from app.api.worker import router as worker_router
+from app.api.worker_heartbeat import router as worker_heartbeat_router
 from app.core.config import get_settings
 from app.core.logging import configure_logging, get_logger
 from app.db.session import check_db_connection, engine
@@ -85,6 +93,11 @@ def create_application() -> FastAPI:
     # API Routers
     # --------------------------------------------------------------
     app.include_router(
+        auth_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
         organization_router,
         prefix=settings.API_V1_PREFIX,
     )
@@ -101,6 +114,41 @@ def create_application() -> FastAPI:
 
     app.include_router(
         job_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        worker_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        worker_heartbeat_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        retry_policy_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        scheduled_job_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        job_execution_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        job_log_router,
+        prefix=settings.API_V1_PREFIX,
+    )
+
+    app.include_router(
+        dead_letter_queue_router,
         prefix=settings.API_V1_PREFIX,
     )
 

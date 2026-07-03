@@ -1,3 +1,13 @@
+"""
+Job service.
+
+Orchestrates business logic for job CRUD, delegating all
+persistence to JobRepository. Follows the same pattern as
+OrganizationService, ProjectService, and QueueService.
+"""
+
+import uuid
+
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.repositories.job_repository import JobRepository
@@ -35,12 +45,15 @@ class JobService:
     async def list(self):
         return await self.repo.list_active()
 
-    async def get(self, job_id):
+    async def list_by_queue(self, queue_id: uuid.UUID):
+        return await self.repo.list_by_queue(queue_id)
+
+    async def get(self, job_id: uuid.UUID):
         return await self.repo.get_active(job_id)
 
     async def update(
         self,
-        job_id,
+        job_id: uuid.UUID,
         data: JobUpdate,
     ):
         job = await self.repo.update(
@@ -51,6 +64,6 @@ class JobService:
         await self.session.commit()
         return job
 
-    async def delete(self, job_id):
+    async def delete(self, job_id: uuid.UUID):
         await self.repo.soft_delete(job_id)
         await self.session.commit()
