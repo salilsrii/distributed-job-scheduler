@@ -6,6 +6,7 @@ import {
 } from 'lucide-react'
 import { jobsApi } from '../api/jobs'
 import { workersApi } from '../api/workers'
+import { queuesApi } from '../api/queues'
 import { StatCard, Card, CardHeader, CardTitle, CardContent } from '../components/ui/Card'
 import { JobStatusBadge, WorkerStatusBadge } from '../components/ui/Badge'
 import { Table, Thead, Th, Tbody, Td, EmptyRow } from '../components/ui/Table'
@@ -30,34 +31,71 @@ const MOCK_WORKERS = [
   { id: 'w4', hostname: 'worker-04', status: 'draining', last_seen_at: new Date(Date.now() - 10_000).toISOString() },
 ]
 
-function useMockOrReal(queryKey, apiFn, mockData) {
-  return useQuery({
-    queryKey,
+export default function Dashboard() {
+  const recentQ = useQuery({
+    queryKey: ['jobs-recent'],
     queryFn: async () => {
-      try { return await apiFn() } catch { return mockData }
+      try { return await jobsApi.list() } catch { return MOCK_JOBS }
     },
     staleTime: 30_000,
     refetchInterval: 60_000,
   })
-}
 
-export default function Dashboard() {
-  const statsQ   = useMockOrReal(['job-stats'],    jobsApi.stats,    MOCK_STATS)
-  const recentQ  = useMockOrReal(['jobs-recent'],  () => jobsApi.list({ limit: 5 }), { items: MOCK_JOBS, total: 5 })
-  const workersQ = useMockOrReal(['workers-list'], () => workersApi.list({ limit: 4 }), { items: MOCK_WORKERS, total: 4 })
+  const workersQ = useQuery({
+    queryKey: ['workers-list'],
+    queryFn: async () => {
+      try { return await workersApi.list() } catch { return MOCK_WORKERS }
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  })
 
-  const stats   = statsQ.data ?? MOCK_STATS
-  const jobs    = recentQ.data?.items ?? MOCK_JOBS
-  const workers = workersQ.data?.items ?? MOCK_WORKERS
+  const queuesQ = useQuery({
+    queryKey: ['queues'],
+    queryFn: async () => {
+      try { return await queuesApi.list() } catch { return [] }
+    },
+    staleTime: 60_000,
+  })
+
+  const allJobs = Array.isArray(recentQ.data) ? recentQ.data : (recentQ.data?.items ?? MOCK_JOBS)
+  const allWorkers = Array.isArray(workersQ.data) ? workersQ.data : (workersQ.data?.items ?? MOCK_WORKERS)
+  const allQueues = Array.isArray(queuesQ.data) ? queuesQ.data : (queuesQ.data?.items ?? [])
+
+  const queueMap = allQueues.reduce((acc, q) => {
+    acc[q.id] = q.name
+    return acc
+  }, {})
+
+  const statsQ = useQuery({
+    queryKey: ['job-stats'],
+    queryFn: async () => {
+      try { return await jobsApi.stats() } catch { return null }
+    },
+    staleTime: 30_000,
+    refetchInterval: 60_000,
+  })
+
+  const computedStats = {
+    total: allJobs.length,
+    running: allJobs.filter((j) => j.status === 'running').length,
+    success: allJobs.filter((j) => j.status === 'success').length,
+    failed: allJobs.filter((j) => j.status === 'failed').length,
+    pending: allJobs.filter((j) => j.status === 'pending' || j.status === 'queued').length,
+  }
+
+  const stats = statsQ.data ?? (recentQ.isSuccess ? computedStats : MOCK_STATS)
+  const jobs = allJobs.slice(0, 5)
+  const workers = allWorkers.slice(0, 4)
 
   return (
     <div className="space-y-6 animate-[fadeIn_0.3s_ease-out]">
       {/* Stat cards */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
-        <StatCard title="Total Jobs"  value={stats.total}   icon={Briefcase} color="indigo"  loading={statsQ.isLoading} />
-        <StatCard title="Running"     value={stats.running} icon={TrendingUp} color="blue"   loading={statsQ.isLoading} subtitle="In progress" />
-        <StatCard title="Succeeded"   value={stats.success} icon={CheckCircle2} color="emerald" loading={statsQ.isLoading} />
-        <StatCard title="Failed"      value={stats.failed}  icon={XCircle}   color="rose"   loading={statsQ.isLoading} trend={-3} />
+        <StatCard title="Total Jobs"  value={stats.total}   icon={Briefcase} color="indigo"  loading={statsQ.isLoading && !recentQ.isSuccess} />
+        <StatCard title="Running"     value={stats.running} icon={TrendingUp} color="blue"   loading={statsQ.isLoading && !recentQ.isSuccess} subtitle="In progress" />
+        <StatCard title="Succeeded"   value={stats.success} icon={CheckCircle2} color="emerald" loading={statsQ.isLoading && !recentQ.isSuccess} />
+        <StatCard title="Failed"      value={stats.failed}  icon={XCircle}   color="rose"   loading={statsQ.isLoading && !recentQ.isSuccess} trend={-3} />
       </div>
 
       <div className="grid lg:grid-cols-3 gap-6">
@@ -90,9 +128,9 @@ export default function Dashboard() {
                           {job.name}
                         </Link>
                       </Td>
-                      <Td><span className="text-slate-400">{job.queue?.name ?? '—'}</span></Td>
+                      <Td><span className="text-slate-400">{job.queue?.name ?? queueMap[job.queue_id] ?? job.queue_id?.slice(0, 8) ?? '—'}</span></Td>
                       <Td><JobStatusBadge status={job.status} /></Td>
-                      <Td className="text-slate-500 text-xs">{formatRelative(job.created_at)}</Td>
+                      <Td className="text-slate-500 text-xs">{job.created_at ? formatRelative(job.created_at) : '—'}</Td>
                       <Td className="text-slate-500 text-xs">{formatDuration(job.timeout_seconds)}</Td>
                     </tr>
                   ))
@@ -122,7 +160,7 @@ export default function Dashboard() {
                       <Cpu className="size-4 text-slate-500 shrink-0" />
                       <div className="min-w-0">
                         <p className="text-sm font-medium text-slate-200 truncate">{w.hostname}</p>
-                        <p className="text-xs text-slate-600">{formatRelative(w.last_seen_at)}</p>
+                        <p className="text-xs text-slate-600">{w.last_seen_at ? formatRelative(w.last_seen_at) : 'Never'}</p>
                       </div>
                     </div>
                     <WorkerStatusBadge status={w.status} />

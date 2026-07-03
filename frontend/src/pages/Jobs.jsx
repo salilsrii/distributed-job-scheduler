@@ -5,6 +5,7 @@ import {
   Plus, RefreshCw, Search, RotateCcw, XCircle, Filter, ChevronDown,
 } from 'lucide-react'
 import { jobsApi } from '../api/jobs'
+import { queuesApi } from '../api/queues'
 import { Card } from '../components/ui/Card'
 import { Button } from '../components/ui/Button'
 import { JobStatusBadge } from '../components/ui/Badge'
@@ -36,34 +37,55 @@ export default function Jobs() {
   const [status,    setStatus]    = useState('')
   const [actionTgt, setActionTgt] = useState(null) // { job, action }
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['jobs', page, search, status],
+  const { data: jobsData = [], isLoading, refetch } = useQuery({
+    queryKey: ['jobs'],
     queryFn: async () => {
       try {
-        return await jobsApi.list({ page, page_size: PAGE_SIZE, search, status: status || undefined })
+        return await jobsApi.list()
       } catch {
-        let items = MOCK_JOBS
-        if (search) items = items.filter((j) => j.name.includes(search.toLowerCase()))
-        if (status) items = items.filter((j) => j.status === status)
-        return { items: items.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE), total: items.length }
+        return MOCK_JOBS
       }
     },
-    placeholderData: (prev) => prev,
   })
+
+  const { data: queuesData = [] } = useQuery({
+    queryKey: ['queues'],
+    queryFn: async () => {
+      try {
+        return await queuesApi.list()
+      } catch {
+        return []
+      }
+    },
+    staleTime: 60_000,
+  })
+
+  const queueMap = queuesData.reduce((acc, q) => {
+    acc[q.id] = q.name
+    return acc
+  }, {})
+
+  const filteredJobs = jobsData.filter((job) => {
+    const matchSearch = search ? job.name.toLowerCase().includes(search.toLowerCase()) : true
+    const matchStatus = status ? job.status === status : true
+    return matchSearch && matchStatus
+  })
+
+  const start = (page - 1) * PAGE_SIZE
+  const end = start + PAGE_SIZE
+  const jobs = filteredJobs.slice(start, end)
+  const total = filteredJobs.length
 
   const cancelMut = useMutation({
     mutationFn: (id) => jobsApi.cancel(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['jobs'] }); setActionTgt(null); toast.success('Job cancelled') },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(e?.response?.data?.detail || e?.message || 'Unexpected error'),
   })
   const retryMut = useMutation({
     mutationFn: (id) => jobsApi.retry(id),
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['jobs'] }); setActionTgt(null); toast.success('Job re-queued') },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(e?.response?.data?.detail || e?.message || 'Unexpected error'),
   })
-
-  const jobs  = data?.items ?? []
-  const total = data?.total  ?? 0
 
   const confirmAction = actionTgt?.action === 'cancel'
     ? { fn: () => cancelMut.mutate(actionTgt.job.id), loading: cancelMut.isPending, label: 'Cancel Job', msg: `Cancel job "${actionTgt?.job?.name}"?` }
@@ -124,7 +146,7 @@ export default function Jobs() {
                       {job.name}
                     </Link>
                   </Td>
-                  <Td className="text-slate-400 text-xs font-mono">{job.queue?.name ?? '—'}</Td>
+                  <Td className="text-slate-400 text-xs font-mono">{job.queue?.name ?? queueMap[job.queue_id] ?? job.queue_id?.slice(0, 8) ?? '—'}</Td>
                   <Td><JobStatusBadge status={job.status} /></Td>
                   <Td>
                     <span className={`text-xs font-medium ${job.priority >= 100 ? 'text-rose-400' : job.priority >= 10 ? 'text-orange-400' : job.priority >= 5 ? 'text-amber-400' : 'text-slate-500'}`}>
@@ -132,7 +154,7 @@ export default function Jobs() {
                     </span>
                   </Td>
                   <Td className="text-slate-500 text-xs">{formatDuration(job.timeout_seconds)}</Td>
-                  <Td className="text-slate-500 text-xs">{formatRelative(job.created_at)}</Td>
+                  <Td className="text-slate-500 text-xs">{job.created_at ? formatRelative(job.created_at) : '—'}</Td>
                   <Td>
                     <div className="flex items-center gap-1">
                       {['running', 'queued', 'pending', 'retrying'].includes(job.status) && (

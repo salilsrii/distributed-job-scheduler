@@ -7,10 +7,19 @@ export const workersApi = {
   get: (id) =>
     apiClient.get(`/workers/${id}`).then((r) => r.data),
 
+  create: (data) =>
+    apiClient.post('/workers', data).then((r) => r.data),
+
+  update: (id, data) =>
+    apiClient.put(`/workers/${id}`, data).then((r) => r.data),
+
   drain: (id) =>
     apiClient.post(`/workers/${id}/drain`).then((r) => r.data),
 
   deregister: (id) =>
+    apiClient.delete(`/workers/${id}`).then((r) => r.data),
+
+  delete: (id) =>
     apiClient.delete(`/workers/${id}`).then((r) => r.data),
 
   heartbeats: (id, params) =>

@@ -2,10 +2,10 @@ import apiClient from './client'
 
 export const settingsApi = {
   getProfile: () =>
-    apiClient.get('/users/me').then((r) => r.data),
+    apiClient.get('/auth/me').then((r) => r.data),
 
   updateProfile: (data) =>
-    apiClient.patch('/users/me', data).then((r) => r.data),
+    apiClient.put('/users/me', data).then((r) => r.data),
 
   changePassword: (data) =>
     apiClient.post('/users/me/change-password', data).then((r) => r.data),

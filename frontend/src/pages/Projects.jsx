@@ -96,9 +96,9 @@ export default function Projects() {
 
     onError: (e) =>
       toast.error(
-        e.response?.data?.detail ||
-        e.message ||
-        'Failed to create project',
+        e?.response?.data?.detail ||
+        e?.message ||
+        'Unexpected error',
       ),
   })
 
@@ -116,7 +116,11 @@ export default function Projects() {
     },
 
     onError: (e) =>
-      toast.error(e.message),
+      toast.error(
+        e?.response?.data?.detail ||
+        e?.message ||
+        'Unexpected error',
+      ),
   })
   function handleCreate(e) {
     e.preventDefault()

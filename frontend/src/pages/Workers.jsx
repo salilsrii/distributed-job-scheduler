@@ -6,6 +6,7 @@ import { WorkerStatusBadge } from '../components/ui/Badge'
 import { ConfirmModal } from '../components/ui/Modal'
 import { Button } from '../components/ui/Button'
 import { SkeletonCard } from '../components/ui/Spinner'
+import { Pagination } from '../components/ui/Table'
 import { formatRelative } from '../utils/formatters'
 import { toast } from '../hooks/useToast'
 
@@ -18,22 +19,20 @@ const MOCK_WORKERS = [
   { id: 'w6', hostname: 'worker-dev-02',  ip_address: '10.0.1.11', status: 'online',   capabilities: { queues: ['email', 'ingestion'] },last_seen_at: new Date(Date.now() - 8_000).toISOString() },
 ]
 
+const PAGE_SIZE = 10
+
 export default function Workers() {
   const qc = useQueryClient()
+  const [page,    setPage]    = useState(1)
   const [search,  setSearch]  = useState('')
   const [statusF, setStatusF] = useState('')
   const [drainTgt,setDrainTgt]= useState(null)
 
-  const { data, isLoading, refetch } = useQuery({
-    queryKey: ['workers', search, statusF],
+  const { data: workersData = [], isLoading, refetch } = useQuery({
+    queryKey: ['workers'],
     queryFn: async () => {
-      try { return await workersApi.list({ search, status: statusF || undefined }) }
-      catch {
-        let w = MOCK_WORKERS
-        if (search) w = w.filter((x) => x.hostname.includes(search))
-        if (statusF) w = w.filter((x) => x.status === statusF)
-        return { items: w, total: w.length }
-      }
+      try { return await workersApi.list() }
+      catch { return MOCK_WORKERS }
     },
     refetchInterval: 15_000,
   })
@@ -41,12 +40,21 @@ export default function Workers() {
   const drainMut = useMutation({
     mutationFn: workersApi.drain,
     onSuccess: () => { qc.invalidateQueries({ queryKey: ['workers'] }); setDrainTgt(null); toast.success('Worker set to draining') },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(e?.response?.data?.detail || e?.message || 'Unexpected error'),
   })
 
-  const workers = data?.items ?? []
+  const filteredWorkers = workersData.filter((x) => {
+    const matchSearch = search ? x.hostname.toLowerCase().includes(search.toLowerCase()) : true
+    const matchStatus = statusF ? x.status === statusF : true
+    return matchSearch && matchStatus
+  })
 
-  const counts = workers.reduce((acc, w) => {
+  const start = (page - 1) * PAGE_SIZE
+  const end = start + PAGE_SIZE
+  const workers = filteredWorkers.slice(start, end)
+  const total = filteredWorkers.length
+
+  const counts = workersData.reduce((acc, w) => {
     acc[w.status] = (acc[w.status] ?? 0) + 1
     return acc
   }, {})
@@ -74,11 +82,11 @@ export default function Workers() {
           <div className="relative max-w-sm flex-1">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-slate-500 pointer-events-none" />
             <input type="search" placeholder="Search hostname…" value={search}
-              onChange={(e) => setSearch(e.target.value)}
+              onChange={(e) => { setSearch(e.target.value); setPage(1) }}
               className="w-full pl-9 h-9 rounded-lg bg-slate-800 border border-slate-700 text-slate-100 text-sm placeholder:text-slate-600 focus:outline-none focus:border-indigo-500 transition-colors"
             />
           </div>
-          <select value={statusF} onChange={(e) => setStatusF(e.target.value)}
+          <select value={statusF} onChange={(e) => { setStatusF(e.target.value); setPage(1) }}
             className="h-9 px-3 rounded-lg bg-slate-800 border border-slate-700 text-sm text-slate-300 focus:outline-none focus:border-indigo-500">
             <option value="">All statuses</option>
             {['online', 'busy', 'draining', 'offline'].map((s) => (
@@ -104,6 +112,12 @@ export default function Workers() {
           {workers.map((w) => (
             <WorkerCard key={w.id} worker={w} onDrain={() => setDrainTgt(w)} />
           ))}
+        </div>
+      )}
+
+      {total > PAGE_SIZE && (
+        <div className="mt-4">
+          <Pagination page={page} pageSize={PAGE_SIZE} total={total} onPage={setPage} />
         </div>
       )}
 

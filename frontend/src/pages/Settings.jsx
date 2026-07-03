@@ -64,7 +64,7 @@ function ProfileTab({ user, persist }) {
       persist(localStorage.getItem('access_token'), data)
       toast.success('Profile updated')
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(e?.response?.data?.detail || e?.message || 'Unexpected error'),
   })
 
   const pwMut = useMutation({
@@ -74,7 +74,7 @@ function ProfileTab({ user, persist }) {
       setForm((f) => ({ ...f, current_password: '', new_password: '', confirm_password: '' }))
       setPwErr('')
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(e?.response?.data?.detail || e?.message || 'Unexpected error'),
   })
 
   function handleProfile(e) {

@@ -11,7 +11,7 @@ export const queuesApi = {
     apiClient.post('/queues', data).then((r) => r.data),
 
   update: (id, data) =>
-    apiClient.patch(`/queues/${id}`, data).then((r) => r.data),
+    apiClient.put(`/queues/${id}`, data).then((r) => r.data),
 
   delete: (id) =>
     apiClient.delete(`/queues/${id}`).then((r) => r.data),

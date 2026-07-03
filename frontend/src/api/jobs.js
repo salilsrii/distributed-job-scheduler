@@ -11,7 +11,7 @@ export const jobsApi = {
     apiClient.post('/jobs', data).then((r) => r.data),
 
   update: (id, data) =>
-    apiClient.patch(`/jobs/${id}`, data).then((r) => r.data),
+    apiClient.put(`/jobs/${id}`, data).then((r) => r.data),
 
   cancel: (id) =>
     apiClient.post(`/jobs/${id}/cancel`).then((r) => r.data),

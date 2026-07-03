@@ -11,7 +11,7 @@ export const projectsApi = {
     apiClient.post('/projects', data).then((r) => r.data),
 
   update: (id, data) =>
-    apiClient.patch(`/projects/${id}`, data).then((r) => r.data),
+    apiClient.put(`/projects/${id}`, data).then((r) => r.data),
 
   delete: (id) =>
     apiClient.delete(`/projects/${id}`).then((r) => r.data),

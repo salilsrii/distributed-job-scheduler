@@ -78,7 +78,7 @@ export default function CreateJob() {
     },
     staleTime: 60_000,
   })
-  const queues = queuesQ.data?.items ?? []
+  const queues = Array.isArray(queuesQ.data) ? queuesQ.data : (queuesQ.data?.items ?? [])
 
   const createMut = useMutation({
     mutationFn: jobsApi.create,
@@ -86,7 +86,7 @@ export default function CreateJob() {
       toast.success('Job created successfully!')
       navigate(ROUTES.JOBS)
     },
-    onError: (e) => toast.error(e.message),
+    onError: (e) => toast.error(e?.response?.data?.detail || e?.message || 'Unexpected error'),
   })
 
   function set(key, val) {
